@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Special Meren wkwk</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/TextPlugin.min.js"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      :root {
+        --gb-body: #b39ddb;
+        --gb-body-shadow: #836fa8;
+        --gb-screen-bezel: #5e4a75;
+        --gb-screen-bg: #e3d3fc;
+        --gb-pixel-dark: #4a235a;
+        --gb-pixel-light: #ad89cc;
+        --btn-a: #ff66b3;
+        --btn-a-shadow: #c43e80;
+        --btn-select: #7e639b;
+        --dpad-dark: #6b5286;
+      }
+
+      * {
+        box-sizing: border-box;
+        user-select: none;
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      body {
+        background-color: #2a1b3d;
+        background-image: linear-gradient(
+            rgba(255, 105, 180, 0.15) 1px,
+            transparent 1px
+          ),
+          linear-gradient(90deg, rgba(255, 105, 180, 0.15) 1px, transparent 1px);
+        background-size: 30px 30px;
+        box-shadow: inset 0 0 200px rgba(0, 0, 0, 0.7);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        margin: 0;
+        font-family: "Press Start 2P", cursive;
+        overflow: hidden;
+      }
+
+      .gameboy {
+        width: 340px;
+        height: 580px;
+        background-color: var(--gb-body);
+        border-radius: 15px 15px 40px 15px;
+        box-shadow: -5px 5px 0px var(--gb-body-shadow),
+          0 0 60px rgba(169, 88, 223, 0.4);
+        position: relative;
+        padding: 30px 25px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        transform-origin: center center;
+        transition: transform 0.3s ease;
+      }
+
+      .screen-bezel {
+        width: 100%;
+        height: 240px;
+        background-color: var(--gb-screen-bezel);
+        border-radius: 15px 15px 35px 15px;
+        padding: 25px 35px;
+        position: relative;
+        box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.5);
+        margin-bottom: 40px;
+      }
+
+      .screen-bezel::before {
+        content: "Arini Amanda Husna";
+        position: absolute;
+        top: 8px;
+        left: 0;
+        width: 100%;
+        text-align: center;
+        color: #a996c1;
+        font-size: 8px;
+        font-family: sans-serif;
+        font-weight: bold;
+        letter-spacing: 1px;
+      }
+
+      /* LED Animation when music plays */
+      .battery-led {
+        position: absolute;
+        top: 40%;
+        left: 10px;
+        width: 8px;
+        height: 8px;
+        background-color: #ff4081;
+        border-radius: 50%;
+        box-shadow: 0 0 8px #ff4081;
+        opacity: 0.9;
+        transition: box-shadow 0.2s;
+      }
+      .music-playing .battery-led {
+        animation: pulse-music 0.5s infinite alternate;
+      }
+      @keyframes pulse-music {
+        from {
+          box-shadow: 0 0 5px #ff4081;
+        }
+        to {
+          box-shadow: 0 0 15px #ff4081;
+        }
+      }
+
+      .lcd-screen {
+        width: 100%;
+        height: 100%;
+        background-color: var(--gb-screen-bg);
+        box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.2);
+        position: relative;
+        overflow: hidden;
+        color: var(--gb-pixel-dark);
+        padding: 10px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+      }
+
+      .lcd-screen::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+          to bottom,
+          rgba(255, 255, 255, 0) 50%,
+          rgba(74, 35, 90, 0.05) 50%
+        );
+        background-size: 100% 4px;
+        pointer-events: none;
+      }
+
+      .view {
+        display: none;
+        width: 100%;
+        height: 100%;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        opacity: 0;
+      }
+      .view.active {
+        display: flex;
+        opacity: 1;
+      }
+
+      h1 {
+        font-size: 14px;
+        line-height: 1.5;
+        margin-bottom: 12px;
+        color: var(--gb-pixel-dark);
+      }
+      p {
+        font-size: 9px;
+        line-height: 1.7;
+        margin: 0;
+        color: var(--gb-pixel-dark);
+      }
+      .blinking {
+        animation: blink 1s infinite;
+      }
+      .pixel-art {
+        font-size: 24px;
+        margin-bottom: 12px;
+      }
+
+      #view-1 h1 {
+        font-size: 16px;
+        margin-bottom: 15px;
+      }
+      #view-2 p {
+        text-align: left;
+        align-self: flex-start;
+        min-height: 70px;
+      }
+
+      .on-screen-hint {
+        margin-top: auto;
+        font-size: 7px;
+        color: var(--gb-pixel-light);
+        padding-top: 8px;
+        border-top: 1px solid var(--gb-pixel-light);
+        width: 100%;
+        opacity: 0.8;
+      }
+      .tiny-text {
+        font-size: 7px !important;
+        margin-top: 15px !important;
+      }
+
+      @keyframes blink {
+        0% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0;
+        }
+        100% {
+          opacity: 1;
+        }
+      }
+
+      /* Controls */
+      .controls-area {
+        width: 100%;
+        flex-grow: 1;
+        position: relative;
+      }
+      .brand {
+        font-family: sans-serif;
+        font-weight: bold;
+        color: var(--gb-screen-bezel);
+        font-size: 14px;
+        position: absolute;
+        top: -20px;
+        left: 10px;
+        letter-spacing: 1px;
+        font-style: italic;
+      }
+      .d-pad {
+        position: absolute;
+        top: 30px;
+        left: 10px;
+        width: 90px;
+        height: 90px;
+      }
+      .d-pad div {
+        background-color: var(--dpad-dark);
+        position: absolute;
+        cursor: pointer;
+        box-shadow: 1px 1px 0 var(--gb-body-shadow),
+          2px 2px 5px rgba(0, 0, 0, 0.2);
+      }
+      .d-pad div:active {
+        transform: translate(1px, 1px);
+        box-shadow: none;
+      }
+      .dp-center {
+        width: 30px;
+        height: 30px;
+        top: 30px;
+        left: 30px;
+        z-index: 2;
+      }
+      .dp-up {
+        width: 30px;
+        height: 30px;
+        top: 0;
+        left: 30px;
+        border-radius: 3px 3px 0 0;
+      }
+      .dp-right {
+        width: 30px;
+        height: 30px;
+        top: 30px;
+        left: 60px;
+        border-radius: 0 3px 3px 0;
+      }
+      .dp-down {
+        width: 30px;
+        height: 30px;
+        top: 60px;
+        left: 30px;
+        border-radius: 0 0 3px 3px;
+      }
+      .dp-left {
+        width: 30px;
+        height: 30px;
+        top: 30px;
+        left: 0;
+        border-radius: 3px 0 0 3px;
+      }
+      .action-btns {
+        position: absolute;
+        top: 40px;
+        right: 10px;
+        width: 110px;
+        height: 60px;
+        transform: rotate(-15deg);
+      }
+      .btn-round {
+        width: 40px;
+        height: 40px;
+        background-color: var(--btn-a);
+        border-radius: 50%;
+        position: absolute;
+        cursor: pointer;
+        box-shadow: 2px 2px 0 var(--btn-a-shadow),
+          3px 3px 5px rgba(0, 0, 0, 0.2);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      .btn-round:active {
+        transform: translate(1px, 1px);
+        box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.3);
+      }
+      .btn-round::after {
+        font-family: sans-serif;
+        font-weight: bold;
+        color: var(--gb-screen-bezel);
+        font-size: 14px;
+        position: absolute;
+        bottom: -25px;
+        right: -5px;
+      }
+      .btn-b {
+        bottom: 0;
+        left: 0;
+      }
+      .btn-b::after {
+        content: "B";
+      }
+      .btn-a {
+        top: -10px;
+        right: 0;
+      }
+      .btn-a::after {
+        content: "A";
+      }
+      .options-btns {
+        position: absolute;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        gap: 15px;
+      }
+      .btn-pill {
+        width: 50px;
+        height: 12px;
+        background-color: var(--btn-select);
+        border-radius: 10px;
+        transform: rotate(-15deg);
+        cursor: pointer;
+        border: 1px solid var(--gb-body-shadow);
+        box-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+        position: relative;
+      }
+      .btn-pill:active {
+        transform: rotate(-15deg) translate(1px, 1px);
+        box-shadow: inset 1px 1px 2px rgba(0, 0, 0, 0.3);
+      }
+      .btn-pill::after {
+        font-family: sans-serif;
+        font-weight: bold;
+        color: var(--gb-screen-bezel);
+        font-size: 10px;
+        position: absolute;
+        bottom: -18px;
+        width: 100%;
+        text-align: center;
+        transform: rotate(15deg);
+      }
+      .btn-select::after {
+        content: "SELECT";
+      }
+      .btn-start::after {
+        content: "START";
+      }
+      .speaker {
+        position: absolute;
+        bottom: 20px;
+        right: 15px;
+        transform: rotate(-15deg);
+      }
+      .grille {
+        width: 60px;
+        height: 6px;
+        background-color: rgba(0, 0, 0, 0.1);
+        border-radius: 3px;
+        margin-bottom: 5px;
+        box-shadow: inset 1px 1px 1px rgba(0, 0, 0, 0.1);
+      }
+
+      @media (max-width: 600px) {
+        .gameboy {
+          transform: scale(0.85);
+        }
+      }
+      @media (max-height: 700px) {
+        .gameboy {
+          transform: scale(0.75);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <audio id="bgMusic" loop>
+      <source src="music.mp3" type="audio/mpeg" />
+    </audio>
+
+    <div class="gameboy" id="console">
+      <div class="screen-bezel">
+        <div class="battery-led"></div>
+        <div class="lcd-screen" id="display">
+          <div class="view active" id="view-1">
+            <div class="pixel-art">🎧</div>
+            <h1>PRESS START</h1>
+            <p style="margin-bottom: 15px">TO PLAY MUSIC & START</p>
+            <div class="blinking" style="color: var(--btn-a); font-size: 9px">
+              START GAME
+            </div>
+          </div>
+
+          <div class="view" id="view-2">
+            <h1>HELLO 🎂✨</h1>
+            <p id="typewriter-text"></p>
+            <div class="on-screen-hint">[A] SKIP / [>] NEXT</div>
+          </div>
+
+          <div class="view" id="view-3">
+            <div class="pixel-art">🎂✨</div>
+            <h1>HAPPY BIRTHDAY!</h1>
+            <p>SELAMAT BERTAMBAH UMUR 🥳🥳🥳.</p>
+            <p style="margin-top: 10px; color: var(--btn-a)">CUTE LEVEL: MAX</p>
+            <div class="on-screen-hint">[A] CONTINUOUS</div>
+          </div>
+
+          <div class="view" id="view-4">
+            <h1>WISHES</h1>
+            <p style="margin-bottom: 10px">
+              SEMOGA DI UMUR YANG BARU INI BANYAK KEBERKAHAN, KESEHATAN,
+              KESUKSESAN, DAN KEBAHAGIAAN.
+            </p>
+            <p>HOPE ALL YOUR DREAMS COME TRUE, QT.</p>
+            <div class="on-screen-hint">[A] NEXT</div>
+          </div>
+
+          <div class="view" id="view-5">
+            <h1>THANKS</h1>
+            <p>
+              udah mau buka link ini meskipun rasanya kata katanya acak acakan
+              hehe
+            </p>
+            <p class="tiny-text">Semoga Suka</p>
+            <div class="on-screen-hint">[START] REPLAY</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="controls-area">
+        <div class="brand">HAPPY BIRTHDAY</div>
+        <div class="d-pad">
+          <div class="dp-left" onclick="prevView()"></div>
+          <div class="dp-right" onclick="nextView()"></div>
+          <div class="dp-up"></div>
+          <div class="dp-down"></div>
+          <div class="dp-center"></div>
+        </div>
+        <div class="action-btns">
+          <div class="btn-round btn-b" onclick="prevView()"></div>
+          <div class="btn-round btn-a" onclick="handleAButton()"></div>
+        </div>
+        <div class="options-btns">
+          <div class="btn-pill btn-select"></div>
+          <div class="btn-pill btn-start" onclick="handleStart()"></div>
+        </div>
+        <div class="speaker">
+          <div class="grille"></div>
+          <div class="grille"></div>
+          <div class="grille"></div>
+          <div class="grille"></div>
+          <div class="grille"></div>
+          <div class="grille"></div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      gsap.registerPlugin(TextPlugin);
+
+      let currentView = 1;
+      const totalViews = 5;
+      let isTyping = false;
+      let typingAnimation = null;
+      let musicStarted = false; // Cek apakah musik sudah play
+
+      const typewriterContent =
+        "Hari ini hari yang spesial ya?, pasti banyak hal yang dilalui ada yang berat dan ada yang mudah dan pasti bisa dilewati, cuman mau ngucapin.";
+
+      const views = document.querySelectorAll(".view");
+      const typeContainer = document.getElementById("typewriter-text");
+      const bgMusic = document.getElementById("bgMusic");
+      const gameConsole = document.getElementById("console");
+
+      updateScreen();
+
+      function updateScreen() {
+        views.forEach((v) => {
+          v.classList.remove("active");
+          gsap.to(v, { opacity: 0, duration: 0 });
+        });
+
+        const activeView = document.getElementById(`view-${currentView}`);
+        activeView.classList.add("active");
+        gsap.fromTo(activeView, { opacity: 0 }, { opacity: 1, duration: 0.5 });
+
+        if (currentView === 2) {
+          startTypewriter();
+        }
+      }
+
+      function handleStart() {
+        // LOGIKA MUSIK: Play saat tombol start ditekan pertama kali
+        if (!musicStarted) {
+          bgMusic
+            .play()
+            .then(() => {
+              musicStarted = true;
+              gameConsole.classList.add("music-playing"); // Efek visual LED
+            })
+            .catch((error) => {
+              console.log("Music failed (user must interact first):", error);
+            });
+        }
+
+        if (currentView === 1 || currentView === 5) {
+          currentView = currentView === 5 ? 1 : 2;
+          updateScreen();
+        }
+      }
+
+      function handleAButton() {
+        if (currentView === 2 && isTyping) {
+          skipTypewriter();
+        } else {
+          nextView();
+        }
+      }
+
+      function nextView() {
+        if (currentView < totalViews) {
+          if (currentView === 1) return;
+          currentView++;
+          updateScreen();
+        }
+      }
+
+      function prevView() {
+        if (currentView > 2) {
+          currentView--;
+          updateScreen();
+        }
+      }
+
+      function startTypewriter() {
+        typeContainer.innerHTML = "";
+        isTyping = true;
+        typingAnimation = gsap.to(typeContainer, {
+          duration: 4,
+          text: typewriterContent,
+          ease: "none",
+          onComplete: () => {
+            isTyping = false;
+          },
+        });
+      }
+
+      function skipTypewriter() {
+        if (typingAnimation) {
+          typingAnimation.progress(1);
+          isTyping = false;
+        }
+      }
+    </script>
+  </body>
+</html>
